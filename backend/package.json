@@ -1,0 +1,51 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "POS System Backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
+    "outdated": "npm outdated",
+    "seed": "node scripts/seedDatabase.js"
+  },
+  "keywords": [
+    "pos",
+    "nodejs",
+    "mongoose",
+    "express",
+    "javascript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.971.0",
+    "bcrypt": "^6.0.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "http-status-codes": "^2.3.0",
+    "i18next": "^25.7.1",
+    "i18next-fs-backend": "^2.6.1",
+    "i18next-http-middleware": "^3.9.0",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.0.1",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "multer-s3": "^3.0.1",
+    "nodemailer": "^7.0.11",
+    "nodemon": "^3.1.11",
+    "pdfkit": "^0.17.2",
+    "prettier": "^3.7.4",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1"
+  }
+}
