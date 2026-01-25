@@ -1,0 +1,67 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: |
+          cd ~/satti-pos/backend
+          npm ci --production
+
+      - name: Install frontend dependencies
+        run: |
+          cd ~/satti-pos/frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd ~/satti-pos/frontend
+          echo "VITE_API_BASE_URL=https://api.pos.7elogics.com" > .env
+          npm run build
+
+      - name: Create backend .env
+        run: |
+          cd ~/satti-pos/backend
+          cat > .env << EOF
+          PORT=5000
+          MONGO_URI=${{ secrets.MONGO_URI }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS=${{ secrets.AWS_SECRET_ACCESS }}
+          AWS_REGION=${{ secrets.AWS_REGION }}
+          AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
+          EOF
+
+      - name: Restart backend with PM2
+        run: |
+          cd ~/satti-pos
+          pm2 restart satti-pos-backend || pm2 start ecosystem.config.js
+          pm2 save
+
+      - name: Reload Nginx
+        run: |
+          sudo nginx -t && sudo systemctl reload nginx
+
+      - name: Deployment status
+        run: |
+          echo "✅ Deployment completed!"
+          pm2 status
