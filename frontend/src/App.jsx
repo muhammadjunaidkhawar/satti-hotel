@@ -69,6 +69,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/menu"
           element={
