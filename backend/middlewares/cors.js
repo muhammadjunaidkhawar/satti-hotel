@@ -1,6 +1,6 @@
 const cors = require('cors');
 
-const whiteList = ['http://localhost:5174'];
+const whiteList = ['http://localhost:5174', 'https://pos.7elogics.com'];
 
 const corsOptions = {
   origin: whiteList,
