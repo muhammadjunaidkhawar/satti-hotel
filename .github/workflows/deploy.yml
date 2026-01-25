@@ -62,7 +62,8 @@ jobs:
 
       - name: Reload Nginx
         run: |
-          sudo nginx -t && sudo systemctl reload nginx
+          sudo nginx -t
+          sudo systemctl reload nginx
 
       - name: Deployment status
         run: |
