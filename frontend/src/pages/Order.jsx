@@ -8,6 +8,7 @@ import {
   usePayOrderMutation,
 } from "../api/order.api";
 import { useProductsQuery } from "../api/product.api";
+import { useMenusQuery } from "../api/menu.api";
 import { useTablesQuery } from "../api/table.api";
 import Modal from "../components/common/Modal";
 import { Trash2 } from "lucide-react";
@@ -29,11 +30,13 @@ export default function Order() {
     formState: { errors, isSubmitting },
     reset,
     control,
+    setValue,
+    watch,
   } = useForm({
     defaultValues: {
       table: "",
       customer_name: "",
-      products: [{ product: "", quantity: 1 }],
+      products: [{ menu: "", product: "", quantity: 1 }],
       status: "in process",
     },
   });
@@ -78,7 +81,11 @@ export default function Order() {
 
   // Fetch products and tables
   const { data: productsData } = useProductsQuery();
-  const products = productsData?.result?.products || [];
+  const allProducts = productsData?.result?.products || [];
+
+  // Fetch menus
+  const { data: menusData } = useMenusQuery();
+  const menus = menusData?.result || [];
 
   const { data: tablesData } = useTablesQuery();
   const tables = tablesData?.result || [];
@@ -110,7 +117,7 @@ export default function Order() {
     reset({
       table: tables[0]?._id || "",
       customer_name: "",
-      products: [{ product: "", quantity: 1 }],
+      products: [{ menu: "", product: "", quantity: 1 }],
       status: "in process",
     });
     setIsModalOpen(true);
@@ -124,11 +131,23 @@ export default function Order() {
       customer_name: order.customer?.name || "",
       products:
         order.products && order.products.length > 0
-          ? order.products.map((p) => ({
-              product: typeof p.product === "object" ? p.product._id : p.product || "",
-              quantity: p.quantity || 1,
-            }))
-          : [{ product: "", quantity: 1 }],
+          ? order.products.map((p) => {
+              const productId =
+                typeof p.product === "object" ? p.product._id : p.product || "";
+              const foundProduct = allProducts.find((prod) => prod._id === productId);
+              const productMenuValue = foundProduct?.menu;
+              const menuId =
+                typeof productMenuValue === "object"
+                  ? productMenuValue?._id
+                  : productMenuValue || "";
+
+              return {
+                menu: menuId,
+                product: productId,
+                quantity: p.quantity || 1,
+              };
+            })
+          : [{ menu: "", product: "", quantity: 1 }],
       status: order.status || "in process",
     });
     setIsModalOpen(true);
@@ -224,7 +243,7 @@ export default function Order() {
     if (typeof product === "object") {
       return product.productSnapshot?.name || product.name || "Unknown";
     }
-    const found = products.find((p) => p._id === product);
+    const found = allProducts.find((p) => p._id === product);
     return found?.name || "Unknown";
   };
 
@@ -232,9 +251,11 @@ export default function Order() {
     if (typeof product === "object") {
       return product.productSnapshot?.price || product.price || 0;
     }
-    const found = products.find((p) => p._id === product);
+    const found = allProducts.find((p) => p._id === product);
     return found?.price || 0;
   };
+
+  const watchedProducts = watch("products") || [];
 
   return (
     <>
@@ -367,7 +388,7 @@ export default function Order() {
                         {getProductName(item)}
                       </span>
                       <span className="text-right">
-                        ${getProductPrice(item).toFixed(2)}
+                        Rs{getProductPrice(item).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -376,7 +397,7 @@ export default function Order() {
                 <div className="mt-4 flex justify-between items-center">
                   <span className="text-white font-normal">Subtotal</span>
                   <span className="text-white font-normal">
-                    ${(order.total_price || calcSubtotal(order.products)).toFixed(2)}
+                    Rs{(order.total_price || calcSubtotal(order.products)).toFixed(2)}
                   </span>
                 </div>
 
@@ -474,47 +495,111 @@ export default function Order() {
             </label>
             <div className="space-y-2">
               {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="flex gap-2 bg-[#2a2a2a] p-2 rounded-md shadow-sm border border-[#3a3a3a]"
-                >
-                  <input
-                    type="number"
-                    {...register(`products.${index}.quantity`, {
-                      required: "Quantity is required",
-                      min: { value: 1, message: "Must be at least 1" },
-                    })}
-                    min="1"
-                    className="w-20 bg-[#1a1a1a] px-2 py-2 rounded-md text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-[#FF9500]"
-                    placeholder="Qty"
-                  />
-                  <select
-                    {...register(`products.${index}.product`, {
-                      required: "Product is required",
-                    })}
-                    className="flex-1 bg-[#1a1a1a] px-2 py-2 rounded-md text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-[#FF9500]"
-                  >
-                    <option value="">Select product</option>
-                    {products.map((product) => (
-                      <option key={product._id} value={product._id}>
-                        {product.name} - ${product.price}
-                      </option>
-                    ))}
-                  </select>
-                  {fields.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="text-red-400 hover:text-red-500 p-1 transition"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
+                <div key={field.id} className="space-y-1">
+                  <div className="flex gap-2 bg-[#2a2a2a] p-2 rounded-md shadow-sm border border-[#3a3a3a]">
+                    <input
+                      type="number"
+                      {...register(`products.${index}.quantity`, {
+                        required: "Quantity is required",
+                        min: { value: 1, message: "Must be at least 1" },
+                      })}
+                      min="1"
+                      className="w-20 bg-[#1a1a1a] px-2 py-2 rounded-md text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-[#FF9500]"
+                      placeholder="Qty"
+                    />
+
+                    {/* Menu dropdown */}
+                    {(() => {
+                      const menuField = register(`products.${index}.menu`, {
+                        required: "Menu is required",
+                      });
+
+                      return (
+                        <select
+                          {...menuField}
+                          onChange={(e) => {
+                            menuField.onChange(e);
+                            const value = e.target.value;
+                            // Reset product when menu changes
+                            setValue(`products.${index}.product`, "", {
+                              shouldValidate: true,
+                            });
+                          }}
+                          className="flex-1 bg-[#1a1a1a] px-2 py-2 rounded-md text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-[#FF9500]"
+                        >
+                          <option value="">Select menu</option>
+                          {menus.map((menu) => (
+                            <option key={menu._id} value={menu._id}>
+                              {menu.name}
+                            </option>
+                          ))}
+                        </select>
+                      );
+                    })()}
+
+                    {/* Product dropdown */}
+                    {(() => {
+                      const selectedMenuId = watchedProducts?.[index]?.menu;
+                      const filteredProducts = selectedMenuId
+                        ? allProducts.filter((product) => {
+                            const productMenu =
+                              typeof product.menu === "object"
+                                ? product.menu._id
+                                : product.menu;
+                            return productMenu === selectedMenuId;
+                          })
+                        : [];
+
+                      return (
+                        <select
+                          {...register(`products.${index}.product`, {
+                            required: "Product is required",
+                          })}
+                          disabled={!selectedMenuId}
+                          className={`flex-1 bg-[#1a1a1a] px-2 py-2 rounded-md text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-[#FF9500] ${
+                            !selectedMenuId ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
+                        >
+                          <option value="">
+                            {selectedMenuId ? "Select product" : "Select menu first"}
+                          </option>
+                          {filteredProducts.map((product) => (
+                            <option key={product._id} value={product._id}>
+                              {product.name} - Rs{product.price}
+                            </option>
+                          ))}
+                        </select>
+                      );
+                    })()}
+
+                    {fields.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="text-red-400 hover:text-red-500 p-1 transition"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Per-row validation messages */}
+                  <div className="flex flex-col text-xs text-red-400 gap-0.5">
+                    {errors.products?.[index]?.quantity && (
+                      <p>{errors.products[index].quantity.message}</p>
+                    )}
+                    {errors.products?.[index]?.menu && (
+                      <p>{errors.products[index].menu.message}</p>
+                    )}
+                    {errors.products?.[index]?.product && (
+                      <p>{errors.products[index].product.message}</p>
+                    )}
+                  </div>
                 </div>
               ))}
               <button
                 type="button"
-                onClick={() => append({ product: "", quantity: 1 })}
+                onClick={() => append({ menu: "", product: "", quantity: 1 })}
                 className="text-sm text-[#FF9500] hover:underline"
               >
                 + Add Product

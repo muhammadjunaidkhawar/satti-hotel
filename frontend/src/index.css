@@ -71,3 +71,25 @@ input[type="number"]::-webkit-outer-spin-button {
   scrollbar-width: thin;
   scrollbar-color: #FF9500 transparent;
 }
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+/* Hide horizontal scrollbar on menu/category strips */
+.menu-horizontal-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.menu-horizontal-scroll::-webkit-scrollbar {
+  display: none;
+}

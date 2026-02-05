@@ -359,17 +359,21 @@ export default function Staff() {
                           </td>
                           <td className="p-3 text-sm text-gray-300">
                             <div className="flex items-center gap-3">
-                              <img
-                                src={
-                                  staff.photo
-                                    ? `${API_BASE_URL}/uploads/${staff.photo}`
-                                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                        staff.name || "Staff"
-                                      )}&background=FF9500&color=000`
-                                }
-                                alt={staff.name}
-                                className="w-10 h-10 rounded-full object-cover border-2 border-[#FF9500]/30"
-                              />
+                              <div className="w-10 h-10 rounded-full bg-[#222] overflow-hidden shrink-0">
+                                <img
+                                  src={
+                                    staff.photo
+                                      ? staff.photo.startsWith("http")
+                                        ? staff.photo
+                                        : `${API_BASE_URL}/uploads/${staff.photo}`
+                                      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                          staff.name || "Staff"
+                                        )}&background=FF9500&color=000`
+                                  }
+                                  alt={staff.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
                               <div>
                                 <div className="text-sm font-medium">{staff.name}</div>
                               </div>
@@ -546,17 +550,19 @@ export default function Staff() {
                     >
                       {/* Staff Photo and Name */}
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="relative">
+                        <div className="relative w-16 h-16 rounded-full bg-[#222] overflow-hidden shrink-0">
                           <img
                             src={
                               staff.photo
-                                ? `${API_BASE_URL}/uploads/${staff.photo}`
+                                ? staff.photo.startsWith("http")
+                                  ? staff.photo
+                                  : `${API_BASE_URL}/uploads/${staff.photo}`
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(
                                     staff.name || "Staff"
                                   )}&background=FF9500&color=000&size=64`
                             }
                             alt={staff.name}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-[#FF9500]/50"
+                            className="w-full h-full object-cover"
                           />
                           {currentStatus && (
                             <div
@@ -839,17 +845,19 @@ export default function Staff() {
           <div className="relative bg-[#1a1a1a] w-[520px] rounded-2xl shadow-2xl border border-[#FF9500]/40 p-6 z-60 animate-fadeIn">
             <div className="flex justify-between items-start border-b border-gray-700 pb-3">
               <div className="flex items-center gap-4">
-                <div className="relative">
+                <div className="relative w-20 h-20 rounded-full bg-[#222] overflow-hidden shrink-0 border-4 border-[#FF9500] shadow-lg">
                   <img
                     src={
                       profileToShow.photo
-                        ? `${API_BASE_URL}/uploads/${profileToShow.photo}`
+                        ? profileToShow.photo.startsWith("http")
+                          ? profileToShow.photo
+                          : `${API_BASE_URL}/uploads/${profileToShow.photo}`
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(
                             profileToShow.name || "Staff"
-                          )}&background=FF9500&color=000`
+                          )}&background=FF9500&color=000&size=80`
                     }
                     alt={profileToShow.name}
-                    className="w-20 h-20 rounded-full object-cover border-4 border-[#FF9500] shadow-lg"
+                    className="w-full h-full object-cover"
                   />
                   <span className="absolute bottom-1 right-1 bg-[#FF9500] w-3 h-3 rounded-full border border-black"></span>
                 </div>
