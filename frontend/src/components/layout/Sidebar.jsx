@@ -107,8 +107,9 @@ export default function Sidebar({ isOpen, onClose }) {
               `flex flex-col items-center gap-1.5 px-2 py-3 rounded-md text-white transition-colors duration-300 ${isActive ? 'bg-[#FF9500] text-black' : 'hover:bg-[#FF9500]/20'}`
             }
           >
-            <i className="fa-solid fa-gear text-sm text-[#FF9500] bg-white rounded-full p-2"></i>
-            <span className="text-xs text-center">Settings</span>
+            <i className="fa-solid fa-sliders text-sm text-[#FF9500] bg-white rounded-full p-2"></i>
+
+            <span className="text-xs text-center">Customization</span>
           </NavLink>
         </nav>
 

@@ -651,7 +651,7 @@ export default function Menu() {
                 </div>
                 <div className="flex justify-between text-sm pt-2 border-t border-gray-700">
                   <span className="text-gray-400">Subtotal</span>
-                  <span className="text-white font-semibold">${orderSubtotal.toFixed(2)}</span>
+                  <span className="text-white font-semibold">Rs{orderSubtotal.toFixed(2)}</span>
                 </div>
               </div>
               <div className="p-3 border-t border-gray-800 shrink-0 space-y-2">

@@ -3,12 +3,16 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { saveAs } from 'file-saver';
 import { useDashboardStatsQuery, useSalesChartDataQuery } from '../api/order.api';
 import { API_BASE_URL } from '../constants/env';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('Monthly');
   const [exportOpen, setExportOpen] = useState(false);
   const [miniCard, setMiniCard] = useState(null);
   const [isClosing, setIsClosing] = useState(false);
+  const navigate = useNavigate();
+
 
   // Fetch dashboard stats
   const { data: dashboardData, isLoading: dashboardLoading } = useDashboardStatsQuery();
@@ -104,22 +108,48 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="relative h-64 md:h-96 w-full flex items-center justify-center overflow-hidden rounded-xl">
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage: 'url("https://images.pexels.com/photos/2725744/pexels-photo-2725744.jpeg?cs=srgb&dl=pexels-enginakyurt-2725744.jpg&fm=jpg")',
-          }}
-        />
+      <div className="relative h-64 md:h-96 w-full overflow-hidden rounded-xl">
+        {/* Slider Wrapper */}
+        <div className="absolute top-0 left-0 w-[300%] h-full flex animate-slide-pause">
+          {/* Three images in a row */}
+          {[
+            "https://images.pexels.com/photos/2725744/pexels-photo-2725744.jpeg?cs=srgb&dl=pexels-enginakyurt-2725744.jpg&fm=jpg",
+            "https://images.pexels.com/photos/2725744/pexels-photo-2725744.jpeg?cs=srgb&dl=pexels-enginakyurt-2725744.jpg&fm=jpg",
+            "https://images.pexels.com/photos/2725744/pexels-photo-2725744.jpeg?cs=srgb&dl=pexels-enginakyurt-2725744.jpg&fm=jpg",
+          ].map((url, i) => (
+            <div
+              key={i}
+              className="w-full flex-shrink-0 h-full bg-cover bg-center opacity-20"
+              style={{ backgroundImage: `url(${url})` }}
+            />
+          ))}
+        </div>
 
         {/* Content */}
-        <div className="relative text-center flex flex-col items-center">
+        <div className="relative z-10 text-center flex flex-col items-center justify-center h-full">
           <h1 className="text-3xl md:text-5xl font-bold text-[#FF9500] mb-2">Welcome to POS Dashboard</h1>
-
           <p className="text-gray-300 text-lg md:text-xl mb-6">Manage sales, tables, and products efficiently</p>
         </div>
       </div>
+
+      {/* Add this CSS in your global CSS or tailwind config */}
+      <style>
+        {`
+  @keyframes slidePause {
+    0% { transform: translateX(0%); }
+    20% { transform: translateX(0%); }      /* stay on first image */
+    33% { transform: translateX(-100%); }   /* move to second */
+    53% { transform: translateX(-100%); }   /* stay on second image */
+    66% { transform: translateX(-200%); }   /* move to third */
+    86% { transform: translateX(-200%); }   /* stay on third image */
+    100% { transform: translateX(0%); }     /* loop back to first */
+  }
+  .animate-slide-pause {
+    animation: slidePause 15s ease-in-out infinite;
+  }
+`}
+      </style>
+
 
       {miniCard && (
         <div
@@ -207,61 +237,105 @@ export default function Dashboard() {
       )}
 
       {/* Top Stats -> now buttons with inline sparkline */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* Add mt-10 to add spacing from landing page */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-10">
         {/* Daily Sales */}
-        <button onClick={() => openMiniCard('daily')} className="bg-[#1E1E1E] rounded-xl p-5 shadow flex justify-between items-start hover:bg-[#252525] transition">
-          <div>
-            <h3 className="text-gray-300 text-sm">Daily Sales</h3>
-            <p className="text-3xl font-semibold mt-2 text-white">{dashboardLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : formatCurrency(stats.todaySales)}</p>
-            <p className="text-xs text-gray-500 mt-3">{currentDate}</p>
+        <button
+          onClick={() => openMiniCard('daily')}
+          className="bg-[#1E1E1E] rounded-xl p-6 shadow flex justify-between items-start hover:bg-[#252525] transition duration-300"
+        >
+          {/* Left info */}
+          <div className="text-left">
+            <h3 className="text-[#FF9500] text-sm font-medium">Daily Sales</h3>
+            <p className="text-3xl md:text-4xl font-bold mt-2 text-white">
+              {dashboardLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : formatCurrency(stats.todaySales)}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">{currentDate}</p>
           </div>
 
+
+          {/* Right icon & mini bars */}
           <div className="flex flex-col items-center">
-            <div className="bg-[#FF9500] text-black p-2 rounded-full mb-2">💲</div>
-            <div className="grid grid-cols-6 gap-1">
+            <div className="bg-[#FF9500] text-black p-3 rounded-full mb-2 text-xl flex items-center justify-center">
+              <i className="fa-solid fa-cart-shopping"></i>
+            </div>
+            <div className="grid grid-cols-6 gap-1 mt-4">
               {[3, 5, 4, 6, 7, 8].map((h, i) => (
-                <div key={i} className="w-1.5 rounded bg-green-400" style={{ height: `${h * 4}px` }}></div>
+                <div
+                  key={i}
+                  className="w-1.5 rounded bg-green-400"
+                  style={{ height: `${h * 4}px` }}
+                ></div>
               ))}
             </div>
           </div>
         </button>
 
         {/* Monthly Revenue */}
-        <button onClick={() => openMiniCard('monthly')} className="bg-[#1E1E1E] rounded-xl p-5 shadow flex justify-between items-start hover:bg-[#252525] transition">
-          <div>
-            <h3 className="text-gray-300 text-sm">Monthly Revenue</h3>
-            <p className="text-3xl font-semibold mt-2 text-white">{dashboardLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : formatCurrency(stats.monthlyRevenue)}</p>
-            <p className="text-xs text-gray-500 mt-3">{getMonthRange()}</p>
+        <button
+          onClick={() => openMiniCard('monthly')}
+          className="bg-[#1E1E1E] rounded-xl p-6 shadow flex justify-between items-start hover:bg-[#252525] transition duration-300"
+        >
+          <div className="text-left">
+            <h3 className="text-[#FF9500] text-sm font-medium">Monthly Revenue</h3>
+            <p className="text-3xl md:text-4xl font-bold mt-2 text-white">
+              {dashboardLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : formatCurrency(stats.monthlyRevenue)}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">{getMonthRange()}</p>
           </div>
 
+
           <div className="flex flex-col items-center">
-            <div className="bg-[#FF9500] text-black p-2 rounded-full mb-2">📸</div>
-            <div className="grid grid-cols-6 gap-1">
+            <div className="bg-[#FF9500] text-black p-3 rounded-full mb-2 text-xl flex items-center justify-center">
+              <i className="fa-solid fa-money-bill-wave"></i>
+            </div>
+            <div className="grid grid-cols-6 gap-1 mt-4">
               {[4, 6, 5, 7, 8, 9].map((h, i) => (
-                <div key={i} className="w-1.5 rounded bg-green-200" style={{ height: `${h * 4}px` }}></div>
+                <div
+                  key={i}
+                  className="w-1.5 rounded bg-green-400"
+                  style={{ height: `${h * 4}px` }}
+                ></div>
               ))}
             </div>
           </div>
         </button>
 
         {/* Table Occupancy */}
-        <button onClick={() => openMiniCard('table')} className="bg-[#1E1E1E] rounded-xl p-5 shadow flex justify-between items-start hover:bg-[#252525] transition">
-          <div>
-            <h3 className="text-gray-300 text-sm">Table Occupancy</h3>
-            <p className="text-xl font-semibold mt-2 text-white">{dashboardLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : `${stats.totalTablesInProcess}/${stats.totalTables} Tables`}</p>
-            <p className="text-xs text-gray-500 mt-3">{stats.totalTables > 0 ? `${Math.round((stats.totalTablesInProcess / stats.totalTables) * 100)}% Occupied` : 'No tables'}</p>
+        <button
+          onClick={() => openMiniCard('table')}
+          className="bg-[#1E1E1E] rounded-xl p-6 shadow flex justify-between items-start hover:bg-[#252525] transition duration-300"
+        >
+          <div className="text-left">
+            <h3 className="text-[#FF9500] text-sm font-medium">Table Occupancy</h3>
+            <p className="text-xl md:text-2xl font-bold mt-2 text-white">
+              {dashboardLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : `${stats.totalTablesInProcess}/${stats.totalTables} Tables`}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">
+              {stats.totalTables > 0
+                ? `${Math.round((stats.totalTablesInProcess / stats.totalTables) * 100)}% Occupied`
+                : 'No tables'}
+            </p>
           </div>
 
+
           <div className="flex flex-col items-center">
-            <div className="bg-[#FF9500] text-black p-2 rounded-full mb-2">🧑‍🤝‍🧑</div>
-            <div className="grid grid-cols-6 gap-1">
+            <div className="bg-[#FF9500] text-black p-3 rounded-full mb-2 text-xl flex items-center justify-center">
+              <i className="fa-solid fa-utensils"></i>
+            </div>
+            <div className="grid grid-cols-6 gap-1 mt-4">
               {[2, 4, 3, 5, 7, 8].map((h, i) => (
-                <div key={i} className="w-1.5 rounded bg-green-400" style={{ height: `${h * 4}px` }}></div>
+                <div
+                  key={i}
+                  className="w-1.5 rounded bg-green-400"
+                  style={{ height: `${h * 4}px` }}
+                ></div>
               ))}
             </div>
           </div>
         </button>
       </div>
+
 
       {/* Popular Products - Single Card with 2 products per row */}
       <div className="mb-6">
@@ -280,7 +354,7 @@ export default function Dashboard() {
           ) : stats.popularProducts && stats.popularProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {stats.popularProducts.map((product) => (
-                <div key={product._id} className="flex justify-between items-center p-3 bg-[#1a1a1a] rounded-lg border border-gray-700 hover:border-[#FF9500]/50 transition-colors">
+                <div key={product._id} onClick={() => navigate('/menu')} className="flex justify-between items-center p-3 bg-[#1a1a1a] rounded-lg border border-gray-700 hover:border-[#FF9500]/50 transition-colors">
                   {/* Product image + name */}
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <img

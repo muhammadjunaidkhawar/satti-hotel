@@ -56,7 +56,6 @@ export default function Order() {
     
     const statusMap = {
       "In Process": "in process",
-      "Ready": "in process", // Backend doesn't have "ready", using "in process"
       "Completed": "completed",
       "Cancelled": "cancelled",
     };
@@ -263,7 +262,7 @@ export default function Order() {
         {/* Orders Section */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-2">
-            {["All", "In Process", "Ready", "Completed", "Cancelled"].map(
+            {["All", "In Process","Completed", "Cancelled"].map(
               (tab) => (
                 <button
                   key={tab}
